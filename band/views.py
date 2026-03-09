@@ -2096,14 +2096,14 @@ def user_add(request):
             profile.save()
 
             # Send welcome email with temp password
-            church_name = profile.church.name if profile.church else 'WorshipFlow'
+            church_name = profile.church.name if profile.church else 'SideNote'
             email_sent = False
             try:
                 send_mail(
-                    subject=f'Welcome to WorshipFlow - {church_name}',
+                    subject=f'Welcome to SideNote - {church_name}',
                     message=(
                         f'Hi {first_name or email},\n\n'
-                        f'An account has been created for you on WorshipFlow for {church_name}.\n\n'
+                        f'An account has been created for you on SideNote for {church_name}.\n\n'
                         f'Email (login): {email}\n'
                         f'Temporary password: {temp_password}\n\n'
                         f'Sign in here: https://worshipflow-mu.vercel.app/login/\n\n'

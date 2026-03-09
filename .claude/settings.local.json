@@ -3,7 +3,12 @@
     "allow": [
       "Bash(python manage.py check:*)",
       "Bash(python:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(.venv/Scripts/python.exe manage.py makemigrations:*)",
+      "Bash(git pull:*)"
     ]
   }
 }
