@@ -270,6 +270,10 @@ def person_detail(request, person_id):
         return redirect('band:home')
     person = get_object_or_404(Person, person_id=person_id, church=church)
     song_preferences = PersonSongPreference.objects.filter(person=person).select_related('song')
+    rostered_service_ids = person.service_appearances.values_list('service_id', flat=True)
+    song_history = ServiceSong.objects.filter(
+        service__in=rostered_service_ids
+    ).select_related('service', 'song', 'lead_person').order_by('-service__service_date', 'song_order')
 
     context = {
         'person': person,
@@ -277,6 +281,7 @@ def person_detail(request, person_id):
         'role_choices': Person.ROLE_CHOICES,
         'frequency_choices': Person.FREQUENCY_CHOICES,
         'service_history': person.service_appearances.select_related('service').order_by('-service__service_date'),
+        'song_history': song_history,
     }
     return render(request, 'band/person_detail.html', context)
 
@@ -725,7 +730,7 @@ def handle_csv_import(request):
                             defaults={'role': member_data['role']},
                         )
                     except Person.DoesNotExist:
-                        pass  # Silently skip unmatched names
+                        errors.append(f"{file_prefix}Member '{member_data['name']}' not found in band members — skipped.")
 
                 imported_count += 1
 

@@ -253,6 +253,38 @@
 </div>
 {% endif %}
 
+{% if song_history %}
+<div class="card">
+    <h3>Song History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Service</th>
+                <th>#</th>
+                <th>Song</th>
+                <th>Artist</th>
+                <th>Key</th>
+                <th>Lead</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ss in song_history %}
+            <tr>
+                <td>{{ ss.service.service_date|date:"M d, Y" }}</td>
+                <td><a href="{% url 'band:service_detail' ss.service.plan_id %}">{{ ss.service.service_name }}</a></td>
+                <td>{{ ss.song_order }}</td>
+                <td><a href="{% url 'band:song_detail' ss.song.song_id %}">{{ ss.song.title }}</a></td>
+                <td>{{ ss.song.artist }}</td>
+                <td><strong>{{ ss.key_used|default:ss.song.default_key }}</strong></td>
+                <td>{% if ss.lead_person %}<a href="{% url 'band:person_detail' ss.lead_person.person_id %}">{{ ss.lead_person.name }}</a>{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
 <p><a href="{% url 'band:people_list' %}">&larr; Back to Band Members</a></p>
 
 <script>
