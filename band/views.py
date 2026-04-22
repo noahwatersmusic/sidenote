@@ -704,7 +704,7 @@ def handle_csv_import(request):
                                     'entry_id': f"E{PersonSongPreference.objects.count() + 1:03d}",
                                     'preferred_key': song_data['key_used'] if song_data['key_used'] else song.default_key,
                                     'can_lead': True,
-                                    'confidence': 'high',
+                                    'confidence': '',
                             }
                         )
                         if not created and not pref.can_lead:
@@ -1328,7 +1328,7 @@ def confirm_pdf_import(request):
                                     'entry_id': f"E{PersonSongPreference.objects.count() + 1:03d}",
                                     'preferred_key': song_key if song_key else song.default_key,
                                     'can_lead': True,
-                                    'confidence': 'high',
+                                    'confidence': '',
                                 }
                             )
                             if not created and not pref.can_lead:
