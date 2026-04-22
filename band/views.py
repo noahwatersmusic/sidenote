@@ -8,7 +8,7 @@ from django.utils.text import slugify
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Church, UserProfile, Person, Song, PersonSongPreference, Service, ServiceSong
+from .models import Church, UserProfile, Person, Song, PersonSongPreference, Service, ServiceSong, ServiceMember
 from .decorators import admin_required, superadmin_required
 import csv
 import io
@@ -276,6 +276,7 @@ def person_detail(request, person_id):
         'song_preferences': song_preferences,
         'role_choices': Person.ROLE_CHOICES,
         'frequency_choices': Person.FREQUENCY_CHOICES,
+        'service_history': person.service_appearances.select_related('service').order_by('-service__service_date'),
     }
     return render(request, 'band/person_detail.html', context)
 
@@ -569,8 +570,17 @@ def handle_csv_import(request):
                             'service_name': service_name,
                             'band_notes': row.get('Band Notes', ''),
                             'service_notes': row.get('Service Notes', ''),
-                            'songs': []
+                            'songs': [],
+                            'members': [],
                         }
+
+                    # Add member to this service if specified
+                    member_name = row.get('Member Name', '').strip()
+                    if member_name:
+                        services_data[service_key]['members'].append({
+                            'name': member_name,
+                            'role': row.get('Member Role', '').strip(),
+                        })
 
                     # Add song to this service if specified
                     if row.get('Song ID') and row.get('Song Order'):
@@ -704,6 +714,18 @@ def handle_csv_import(request):
 
                     except ValueError as e:
                         errors.append(f"{file_prefix}Row {song_data['row_num']}: Invalid number format - {str(e)}")
+
+                # Create ServiceMember records for named participants
+                for member_data in service_info.get('members', []):
+                    try:
+                        person = Person.objects.get(name__iexact=member_data['name'], church=church)
+                        ServiceMember.objects.get_or_create(
+                            service=service,
+                            person=person,
+                            defaults={'role': member_data['role']},
+                        )
+                    except Person.DoesNotExist:
+                        pass  # Silently skip unmatched names
 
                 imported_count += 1
 
@@ -1091,9 +1113,7 @@ def handle_pdf_import(request):
         return redirect('band:home')
 
     pdf_files = request.FILES.getlist('pdf_file')
-    people = Person.objects.filter(church=church).filter(
-        Q(lead_vocal=True) | Q(harmony_vocal=True)
-    ).order_by('name')
+    people = Person.objects.filter(church=church).order_by('name')
 
     all_extracted = []
 
@@ -1630,6 +1650,44 @@ def service_delete_confirm(request, plan_id):
 
 
 @login_required
+@admin_required
+def service_member_add(request, plan_id):
+    """Add a person to a service's band roster"""
+    church = get_active_church(request)
+    if not church:
+        return redirect('band:home')
+    service = get_object_or_404(Service, plan_id=plan_id, church=church)
+
+    if request.method == 'POST':
+        person_id = request.POST.get('person_id', '').strip()
+        role = request.POST.get('role', '').strip()
+        if person_id:
+            try:
+                person = Person.objects.get(person_id=person_id, church=church)
+                ServiceMember.objects.get_or_create(service=service, person=person, defaults={'role': role})
+            except Person.DoesNotExist:
+                messages.error(request, 'Person not found.')
+
+    return redirect('band:service_detail', plan_id=plan_id)
+
+
+@login_required
+@admin_required
+def service_member_remove(request, plan_id, member_id):
+    """Remove a person from a service's band roster"""
+    church = get_active_church(request)
+    if not church:
+        return redirect('band:home')
+    service = get_object_or_404(Service, plan_id=plan_id, church=church)
+
+    if request.method == 'POST':
+        member = get_object_or_404(ServiceMember, id=member_id, service=service)
+        member.delete()
+
+    return redirect('band:service_detail', plan_id=plan_id)
+
+
+@login_required
 def services_list(request):
     """List all services with column-based filtering"""
     church = get_active_church(request)
@@ -1721,6 +1779,8 @@ def service_detail(request, plan_id):
         'service': service,
         'service_songs': service_songs,
         'total_length': format_service_length(total_sec),
+        'service_members': service.members.select_related('person').all(),
+        'all_people': Person.objects.filter(church=church).order_by('name'),
     }
     return render(request, 'band/service_detail.html', context)
 

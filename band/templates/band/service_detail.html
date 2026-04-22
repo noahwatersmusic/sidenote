@@ -134,6 +134,63 @@
     {% endif %}
 </div>
 
+<div class="card">
+    <h3>Band Roster</h3>
+
+    {% if service_members %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                {% if is_admin %}<th style="width: 80px;">Actions</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in service_members %}
+            <tr>
+                <td><a href="{% url 'band:person_detail' member.person.person_id %}">{{ member.person.name }}</a></td>
+                <td>{{ member.role|default:"—" }}</td>
+                {% if is_admin %}
+                <td>
+                    <form method="post" action="{% url 'band:service_member_remove' service.plan_id member.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="padding: 3px 10px; font-size: 12px; background: #e74c3c;">Remove</button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #7f8c8d;"><em>No members added to this service yet.</em></p>
+    {% endif %}
+
+    {% if is_admin %}
+    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+        <h4 style="margin-bottom: 10px; font-size: 14px; color: #555;">Add Member</h4>
+        <form method="post" action="{% url 'band:service_member_add' service.plan_id %}" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+            {% csrf_token %}
+            <div>
+                <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #555;">Person</label>
+                <select name="person_id" required style="padding: 7px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 180px;">
+                    <option value="">— Select —</option>
+                    {% for person in all_people %}
+                    <option value="{{ person.person_id }}">{{ person.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #555;">Role (optional)</label>
+                <input type="text" name="role" placeholder="e.g., Guitar, Drums, Keys" style="padding: 7px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 200px;">
+            </div>
+            <button type="submit" style="background: #27ae60; padding: 7px 16px;">Add</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
 <p><a href="{% url 'band:services_list' %}">&larr; Back to Services</a></p>
 
 <script>

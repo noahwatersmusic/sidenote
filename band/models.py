@@ -191,3 +191,17 @@ class ServiceSong(models.Model):
 
     def __str__(self):
         return f"{self.service.service_name} - {self.song_order}. {self.song.title}"
+
+
+class ServiceMember(models.Model):
+    """A person who participated in a service (any role)"""
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='members')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='service_appearances')
+    role = models.CharField(max_length=100, blank=True, help_text="Role in this service (e.g., Guitar, Drums, Keys)")
+
+    class Meta:
+        ordering = ['person__name']
+        unique_together = ['service', 'person']
+
+    def __str__(self):
+        return f"{self.person.name} @ {self.service.service_name}"
