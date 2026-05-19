@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('band', '0008_servicemember'),
+        ('band', '0009_clear_personsongpreference_confidence'),
     ]
 
     operations = [
