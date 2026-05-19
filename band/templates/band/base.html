@@ -233,6 +233,87 @@
         .message-error { background: #fde8e8; color: #c0392b; border: 1px solid #f5c6cb; }
         .message-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .message-info { background: #e8f0fd; color: #2980b9; border: 1px solid #b8daff; }
+
+        /* ── Mobile nav toggle ─────────────────────────────── */
+        #nav-toggle {
+            display: none;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 13px;
+            border-radius: 4px;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        /* ── Responsive breakpoints ────────────────────────── */
+        @media (max-width: 768px) {
+            body { overflow-x: hidden; }
+
+            .container { padding: 12px; }
+
+            /* Header: title + hamburger on one row, user info wraps below */
+            .header-top { flex-wrap: wrap; align-items: center; gap: 6px; }
+            .header-top h1 { flex: 1; font-size: 22px; }
+            #nav-toggle { display: block; }
+            .user-info {
+                flex-basis: 100%;
+                flex-wrap: wrap;
+                font-size: 12px;
+                gap: 6px;
+            }
+
+            /* Nav: hidden until toggled */
+            #main-nav { display: none; margin-top: 8px; }
+            #main-nav.open { display: flex; flex-direction: column; gap: 4px; }
+            #main-nav a { display: block; margin-right: 0; padding: 10px 15px; }
+
+            /* Cards */
+            .card { padding: 15px; }
+
+            /* Tables scroll horizontally instead of overflowing */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Collapse any inline grid to single column */
+            [style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Release fixed min-widths on form controls */
+            input[style*="min-width"],
+            select[style*="min-width"] {
+                min-width: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            /* Import type picker buttons */
+            .import-type-btn {
+                padding: 15px 20px !important;
+                width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+            }
+
+            /* Stats grid: two columns on tablet */
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            /* Stats grid: single column on phone */
+            .stats-grid { grid-template-columns: 1fr; }
+
+            /* Tighten table cells on small screens */
+            th, td { padding: 8px 10px; font-size: 13px; }
+
+            /* Stack filter forms */
+            .filters form { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
@@ -240,6 +321,7 @@
         <div class="container">
             <div class="header-top">
                 <h1>SideNote</h1>
+                <button id="nav-toggle" aria-label="Toggle navigation" onclick="document.getElementById('main-nav').classList.toggle('open')">&#9776;</button>
                 {% if user.is_authenticated %}
                 <div class="user-info">
                     {% if active_church %}
@@ -267,7 +349,7 @@
                 </div>
                 {% endif %}
             </div>
-            <nav>
+            <nav id="main-nav">
                 <a href="{% url 'band:home' %}">Home</a>
                 <a href="{% url 'band:people_list' %}">Band Members</a>
                 <a href="{% url 'band:songs_list' %}">Songs</a>
