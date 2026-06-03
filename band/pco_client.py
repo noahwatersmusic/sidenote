@@ -23,10 +23,17 @@ class PCOClient:
         data = self._get("/services/v2/service_types", params={"per_page": 100, "order": "name"})
         return data["data"]
 
-    def get_plans(self, service_type_id, filter="future"):
+    def get_plans(self, service_type_id, filter="future", date_from=None, date_to=None):
+        params = {"per_page": 50, "order": "sort_date"}
+        if filter in ("future", "past", "noPlan"):
+            params["filter"] = filter
+        if date_from:
+            params["where[sort_date][gte]"] = date_from
+        if date_to:
+            params["where[sort_date][lte]"] = date_to
         data = self._get(
             f"/services/v2/service_types/{service_type_id}/plans",
-            params={"filter": filter, "per_page": 25, "order": "sort_date"},
+            params=params,
         )
         return data["data"]
 

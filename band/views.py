@@ -571,8 +571,15 @@ def pco_import(request):
         if action == 'list_plans':
             service_type_id = request.POST.get('service_type_id', '')
             filter_type = request.POST.get('filter', 'future')
+            date_from = request.POST.get('date_from', '').strip()
+            date_to = request.POST.get('date_to', '').strip()
             service_types = client.get_service_types()
-            plans = client.get_plans(service_type_id, filter=filter_type)
+            plans = client.get_plans(
+                service_type_id,
+                filter=filter_type,
+                date_from=date_from or None,
+                date_to=date_to or None,
+            )
             service_type_name = next(
                 (st['attributes']['name'] for st in service_types if st['id'] == service_type_id), ''
             )
@@ -583,6 +590,8 @@ def pco_import(request):
                 'selected_service_type_id': service_type_id,
                 'selected_service_type_name': service_type_name,
                 'filter': filter_type,
+                'date_from': date_from,
+                'date_to': date_to,
             })
 
         # ── Phase: preview a specific plan ────────────────────────────────────
