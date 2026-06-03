@@ -574,6 +574,9 @@ def pco_import(request):
             date_from = request.POST.get('date_from', '').strip()
             date_to = request.POST.get('date_to', '').strip()
             service_types = client.get_service_types()
+            # Date range overrides the Show filter
+            if date_from or date_to:
+                filter_type = 'date_range'
             plans = client.get_plans(
                 service_type_id,
                 filter=filter_type,
