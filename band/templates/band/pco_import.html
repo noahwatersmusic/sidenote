@@ -38,15 +38,6 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label for="filter">Show</label>
-                <select name="filter" id="filter"
-                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="future">Upcoming plans</option>
-                    <option value="past">Past plans</option>
-                    <option value="noPlan">No plan</option>
-                </select>
-            </div>
-            <div class="filter-group">
                 <label for="date_from">From date</label>
                 <input type="date" name="date_from" id="date_from"
                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
@@ -58,7 +49,6 @@
             </div>
             <button type="submit" style="background: #3498db;">View Plans</button>
         </div>
-        <p style="margin-top: 10px; font-size: 12px; color: #95a5a6;">Leave dates empty to use the Show filter. Fill in dates to override and search by date range.</p>
     </form>
     {% else %}
     <p style="color: #7f8c8d;"><em>No service types found. Make sure your Planning Center credentials are correct.</em></p>
@@ -70,19 +60,39 @@
 {# ─── Phase: list plans ───────────────────────────────────────────────────── #}
 {% elif phase == 'plans' %}
 <div class="card">
+    <h3>Filter</h3>
+    <form method="post" style="margin-top: 12px;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="list_plans">
+        <input type="hidden" name="service_type_id" value="{{ selected_service_type_id }}">
+        <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="filter-group">
+                <label for="refine_filter">Show</label>
+                <select name="filter" id="refine_filter"
+                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="future" {% if filter == 'future' %}selected{% endif %}>Upcoming plans</option>
+                    <option value="past" {% if filter == 'past' %}selected{% endif %}>Past plans</option>
+                    <option value="noPlan" {% if filter == 'noPlan' %}selected{% endif %}>No plan</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="refine_date_from">From date</label>
+                <input type="date" name="date_from" id="refine_date_from" value="{{ date_from }}"
+                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div class="filter-group">
+                <label for="refine_date_to">To date</label>
+                <input type="date" name="date_to" id="refine_date_to" value="{{ date_to }}"
+                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <button type="submit" style="background: #3498db; padding: 8px 16px;">Apply</button>
+        </div>
+        <p style="margin-top: 8px; font-size: 12px; color: #95a5a6;">Fill in dates to search by date range (overrides Show filter).</p>
+    </form>
+</div>
+
+<div class="card" style="margin-top: 15px;">
     <h3>{{ selected_service_type_name }} — Plans</h3>
-    <p style="margin-top: 6px; font-size: 13px; color: #7f8c8d;">
-        Showing:
-        {% if filter == 'future' %}upcoming plans
-        {% elif filter == 'past' %}past plans
-        {% elif filter == 'noPlan' %}plans with no date
-        {% elif filter == 'date_range' %}
-            {% if date_from and date_to %}{{ date_from }} – {{ date_to }}
-            {% elif date_from %}from {{ date_from }}
-            {% elif date_to %}up to {{ date_to }}
-            {% else %}all plans{% endif %}
-        {% endif %}
-    </p>
     {% if plans %}
     <table style="margin-top: 15px;">
         <thead>
@@ -114,38 +124,6 @@
     {% else %}
     <p style="color: #7f8c8d; margin-top: 15px;"><em>No plans found for this filter.</em></p>
     {% endif %}
-</div>
-
-<div class="card" style="margin-top: 15px;">
-    <h4 style="margin-bottom: 12px;">Refine Filter</h4>
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="list_plans">
-        <input type="hidden" name="service_type_id" value="{{ selected_service_type_id }}">
-        <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
-            <div class="filter-group">
-                <label for="refine_filter">Show</label>
-                <select name="filter" id="refine_filter"
-                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="future" {% if filter == 'future' %}selected{% endif %}>Upcoming plans</option>
-                    <option value="past" {% if filter == 'past' %}selected{% endif %}>Past plans</option>
-                    <option value="noPlan" {% if filter == 'noPlan' %}selected{% endif %}>No plan</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="refine_date_from">From date</label>
-                <input type="date" name="date_from" id="refine_date_from" value="{{ date_from }}"
-                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-            </div>
-            <div class="filter-group">
-                <label for="refine_date_to">To date</label>
-                <input type="date" name="date_to" id="refine_date_to" value="{{ date_to }}"
-                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-            </div>
-            <button type="submit" style="background: #3498db; padding: 8px 16px;">Apply</button>
-        </div>
-        <p style="margin-top: 8px; font-size: 12px; color: #95a5a6;">Fill in dates to search by date range (overrides Show filter).</p>
-    </form>
 </div>
 
 <div style="margin-top: 8px;">
