@@ -5,6 +5,7 @@ from django.db.models import Q, Count, Max
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.utils.text import slugify
+from django.utils.safestring import mark_safe
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
@@ -215,11 +216,18 @@ def home(request):
         messages.info(request, 'Please select a church to get started.')
         return render(request, 'band/home.html', {'no_church': True})
 
+    top_songs_qs = Song.objects.filter(church=church).order_by('-times_used')[:5]
+    chart_labels = mark_safe(json.dumps([s.title for s in top_songs_qs]))
+    chart_data   = mark_safe(json.dumps([s.times_used for s in top_songs_qs]))
+
     context = {
         'total_people': Person.objects.filter(church=church).count(),
         'total_songs': Song.objects.filter(church=church).count(),
         'vocalists': Person.objects.filter(church=church).filter(Q(lead_vocal=True) | Q(harmony_vocal=True)).count(),
         'recent_services': Service.objects.filter(church=church)[:5],
+        'top_songs': top_songs_qs,
+        'chart_labels': chart_labels,
+        'chart_data': chart_data,
     }
     return render(request, 'band/home.html', context)
 

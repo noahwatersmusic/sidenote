@@ -40,4 +40,61 @@
     </table>
 </div>
 {% endif %}
+
+{% if top_songs %}
+<div class="card">
+    <h3>Top Songs by Usage</h3>
+    <div style="position: relative; height: 220px;">
+        <canvas id="topSongsChart" aria-label="Top 5 songs by usage count" role="img"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    new Chart(document.getElementById('topSongsChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels }},
+            datasets: [{
+                label: 'Times Used',
+                data: {{ chart_data }},
+                backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            var n = ctx.parsed.x;
+                            return ' ' + n + (n === 1 ? ' time' : ' times');
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { precision: 0, color: '#7f8c8d' },
+                    grid: { color: 'rgba(0,0,0,0.06)' },
+                    title: { display: true, text: 'Times Used', color: '#7f8c8d', font: { size: 12 } }
+                },
+                y: {
+                    ticks: { color: '#333' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}
