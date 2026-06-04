@@ -116,20 +116,40 @@
     {% endif %}
 </div>
 
-<div style="margin-top: 10px;">
-    {% if filter != 'date_range' %}
-    <form method="post" style="display: inline;">
+<div class="card" style="margin-top: 15px;">
+    <h4 style="margin-bottom: 12px;">Refine Filter</h4>
+    <form method="post">
         {% csrf_token %}
         <input type="hidden" name="action" value="list_plans">
         <input type="hidden" name="service_type_id" value="{{ selected_service_type_id }}">
-        <input type="hidden" name="filter" value="{% if filter == 'future' %}past{% else %}future{% endif %}">
-        <button type="submit" style="background: #95a5a6; padding: 6px 14px; font-size: 13px;">
-            Show {% if filter == 'future' %}past{% else %}upcoming{% endif %} plans instead
-        </button>
+        <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="filter-group">
+                <label for="refine_filter">Show</label>
+                <select name="filter" id="refine_filter"
+                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="future" {% if filter == 'future' %}selected{% endif %}>Upcoming plans</option>
+                    <option value="past" {% if filter == 'past' %}selected{% endif %}>Past plans</option>
+                    <option value="noPlan" {% if filter == 'noPlan' %}selected{% endif %}>No plan</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="refine_date_from">From date</label>
+                <input type="date" name="date_from" id="refine_date_from" value="{{ date_from }}"
+                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div class="filter-group">
+                <label for="refine_date_to">To date</label>
+                <input type="date" name="date_to" id="refine_date_to" value="{{ date_to }}"
+                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <button type="submit" style="background: #3498db; padding: 8px 16px;">Apply</button>
+        </div>
+        <p style="margin-top: 8px; font-size: 12px; color: #95a5a6;">Fill in dates to search by date range (overrides Show filter).</p>
     </form>
-    &nbsp;
-    {% endif %}
-    <a href="{% url 'band:pco_import' %}" style="font-size: 13px; color: #7f8c8d;">&larr; Change service type / filter</a>
+</div>
+
+<div style="margin-top: 8px;">
+    <a href="{% url 'band:pco_import' %}" style="font-size: 13px; color: #7f8c8d;">&larr; Change service type</a>
 </div>
 
 
