@@ -3,151 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - SideNote</title>
+    <title>Sign In — SideNote</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #2c3e50;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .login-wrap {
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+        }
+        .login-brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .login-brand h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+        .login-brand p {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 6px;
         }
         .login-card {
             background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }
-        .login-card h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 28px;
-        }
-        .login-card .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 18px; }
         .form-group label {
             display: block;
             margin-bottom: 6px;
             font-weight: 600;
-            color: #333;
-            font-size: 14px;
+            font-size: 13px;
+            color: #374151;
         }
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1e293b;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
         }
         .form-group input:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
         }
+        .input-wrap { position: relative; }
+        .input-wrap input { padding-right: 56px; }
+        .toggle-pw {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            padding: 2px 4px;
+        }
+        .toggle-pw:hover { color: #64748b; }
         .login-btn {
             width: 100%;
-            padding: 12px;
-            background: #3498db;
+            padding: 11px;
+            background: #3b82f6;
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.15s, box-shadow 0.15s;
+            margin-top: 4px;
         }
-        .login-btn:hover { background: #2980b9; }
-        .error-list {
-            background: #fde8e8;
-            color: #c0392b;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
+        .login-btn:hover { background: #2563eb; box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+        .forgot-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #64748b;
+            text-decoration: none;
         }
-        .error-list ul { list-style: none; }
-        .messages {
-            margin-bottom: 20px;
-        }
-        .messages .message {
+        .forgot-link:hover { color: #3b82f6; }
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
             padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 8px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 13px;
         }
-        .messages .error { background: #fde8e8; color: #c0392b; }
-        .messages .success { background: #e8fde8; color: #27ae60; }
-        .messages .info { background: #e8f0fd; color: #2980b9; }
+        .error-box ul { list-style: none; }
+        .msg { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; }
+        .msg.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .msg.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .msg.info    { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h1>SideNote</h1>
-        <p class="subtitle">Sign in to your account</p>
+    <div class="login-wrap">
+        <div class="login-brand">
+            <h1>SideNote</h1>
+            <p>Worship planning for your team</p>
+        </div>
 
-        {% if messages %}
-        <div class="messages">
+        <div class="login-card">
+            {% if messages %}
             {% for message in messages %}
-            <div class="message {{ message.tags }}">{{ message }}</div>
+            <div class="msg {{ message.tags }}">{{ message }}</div>
             {% endfor %}
-        </div>
-        {% endif %}
+            {% endif %}
 
-        {% if form.errors %}
-        <div class="error-list">
-            <ul>
-                {% for field, errors in form.errors.items %}
-                    {% for error in errors %}
-                    <li>{{ error }}</li>
+            {% if form.errors %}
+            <div class="error-box">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                    {% for error in errors %}<li>{{ error }}</li>{% endfor %}
                     {% endfor %}
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
+                </ul>
+            </div>
+            {% endif %}
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="id_username">Email</label>
-                <input type="email" name="username" id="id_username" autofocus required placeholder="your@email.com" autocomplete="username">
-            </div>
-            <div class="form-group">
-                <label for="id_password">Password</label>
-                <div style="position: relative;">
-                    <input type="password" name="password" id="id_password" required style="width: 100%; padding-right: 52px;" autocomplete="current-password">
-                    <button type="button" onclick="togglePassword('id_password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #7f8c8d; cursor: pointer; padding: 2px 4px; font-size: 13px;">Show</button>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_username">Email</label>
+                    <input type="email" name="username" id="id_username" autofocus required placeholder="you@example.com" autocomplete="username">
                 </div>
-            </div>
-            <button type="submit" class="login-btn">Sign In</button>
-        </form>
-        <p style="text-align: center; margin-top: 16px; font-size: 13px;">
-            <a href="/password-reset/" style="color: #7f8c8d; text-decoration: none;">Forgot your password?</a>
-        </p>
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <div class="input-wrap">
+                        <input type="password" name="password" id="id_password" required autocomplete="current-password">
+                        <button type="button" class="toggle-pw" onclick="togglePw('id_password', this)">Show</button>
+                    </div>
+                </div>
+                <button type="submit" class="login-btn">Sign in</button>
+            </form>
+            <a href="/password-reset/" class="forgot-link">Forgot password?</a>
+        </div>
     </div>
-<script>
-function togglePassword(inputId, btn) {
-    var input = document.getElementById(inputId);
-    if (input.type === 'password') {
-        input.type = 'text';
-        btn.textContent = 'Hide';
-    } else {
-        input.type = 'password';
-        btn.textContent = 'Show';
+
+    <script>
+    function togglePw(id, btn) {
+        var el = document.getElementById(id);
+        el.type = el.type === 'password' ? 'text' : 'password';
+        btn.textContent = el.type === 'password' ? 'Show' : 'Hide';
     }
-}
-</script>
+    </script>
 </body>
 </html>
