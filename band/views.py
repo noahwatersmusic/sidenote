@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Count, Max
+from django.db.models import Q, Count, Max, F
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.core.paginator import Paginator
@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Church, UserProfile, Person, Song, PersonSongPreference, Service, ServiceSong, ServiceMember
+from .models import Church, UserProfile, Person, Song, PersonSongPreference, Service, ServiceSong, ServiceMember, KEY_CHOICES
 from .decorators import admin_required, superadmin_required
 import csv
 import io
@@ -451,6 +451,15 @@ def songs_list(request):
     if search:
         songs = songs.filter(Q(title__icontains=search) | Q(artist__icontains=search))
 
+    # Sort
+    sort = request.GET.get('sort', 'title')
+    if sort == 'last_used':
+        songs = songs.order_by(F('computed_last_used').desc(nulls_last=True))
+    elif sort == 'times_used':
+        songs = songs.order_by(F('computed_times_used').desc(nulls_last=True))
+    else:
+        songs = songs.order_by('title')
+
     # Get unique keys and artists for filter dropdowns
     all_keys = Song.objects.filter(church=church).values_list('default_key', flat=True).distinct().order_by('default_key')
     all_artists = Song.objects.filter(church=church).values_list('artist', flat=True).distinct().order_by('artist')
@@ -460,6 +469,7 @@ def songs_list(request):
     context = {
         'songs': page_obj,
         'page_obj': page_obj,
+        'sort': sort,
         'tempo_choices': Song.TEMPO_CHOICES,
         'all_keys': all_keys,
         'all_artists': all_artists,
@@ -485,11 +495,18 @@ def song_detail(request, song_id):
     can_lead = person_preferences.filter(can_lead=True)
     cannot_lead = person_preferences.filter(can_lead=False)
 
+    service_history = (ServiceSong.objects
+                       .filter(song=song)
+                       .select_related('service', 'lead_person')
+                       .order_by('-service__service_date')[:15])
+
     context = {
         'song': song,
         'can_lead': can_lead,
         'cannot_lead': cannot_lead,
         'tempo_choices': Song.TEMPO_CHOICES,
+        'key_choices': KEY_CHOICES,
+        'service_history': service_history,
     }
     return render(request, 'band/song_detail.html', context)
 
@@ -1964,6 +1981,56 @@ def service_member_remove(request, plan_id, member_id):
 
 
 @login_required
+@admin_required
+def service_song_add(request, plan_id):
+    """Add a song to a service's setlist."""
+    church = get_active_church(request)
+    if not church:
+        return redirect('band:home')
+    service = get_object_or_404(Service, plan_id=plan_id, church=church)
+
+    if request.method == 'POST':
+        song_id = request.POST.get('song_id', '').strip()
+        key_used = request.POST.get('key_used', '').strip()
+        lead_person_id = request.POST.get('lead_person_id', '').strip()
+        if song_id:
+            try:
+                song = Song.objects.get(song_id=song_id, church=church)
+                next_order = (ServiceSong.objects.filter(service=service)
+                              .aggregate(Max('song_order'))['song_order__max'] or 0) + 1
+                lead_person = None
+                if lead_person_id:
+                    lead_person = Person.objects.filter(person_id=lead_person_id, church=church).first()
+                ServiceSong.objects.create(
+                    service=service,
+                    song=song,
+                    song_order=next_order,
+                    key_used=key_used or song.default_key,
+                    lead_person=lead_person,
+                )
+            except Song.DoesNotExist:
+                messages.error(request, 'Song not found.')
+
+    return redirect('band:service_detail', plan_id=plan_id)
+
+
+@login_required
+@admin_required
+def service_song_remove(request, plan_id, ss_id):
+    """Remove a song from a service's setlist."""
+    church = get_active_church(request)
+    if not church:
+        return redirect('band:home')
+    service = get_object_or_404(Service, plan_id=plan_id, church=church)
+
+    if request.method == 'POST':
+        ss = get_object_or_404(ServiceSong, id=ss_id, service=service)
+        ss.delete()
+
+    return redirect('band:service_detail', plan_id=plan_id)
+
+
+@login_required
 def services_list(request):
     """List all services with column-based filtering"""
     church = get_active_church(request)
@@ -2060,6 +2127,8 @@ def service_detail(request, plan_id):
         'total_length': format_service_length(total_sec),
         'service_members': service.members.select_related('person').all(),
         'all_people': Person.objects.filter(church=church).order_by('name'),
+        'all_songs': Song.objects.filter(church=church).order_by('title'),
+        'key_choices': KEY_CHOICES,
     }
     return render(request, 'band/service_detail.html', context)
 
@@ -2178,6 +2247,7 @@ def song_add(request):
 
     context = {
         'tempo_choices': Song.TEMPO_CHOICES,
+        'key_choices': KEY_CHOICES,
     }
     return render(request, 'band/song_add.html', context)
 

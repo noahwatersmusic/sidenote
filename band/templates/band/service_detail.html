@@ -21,7 +21,8 @@
         <h3>Service Information
             {% if is_admin %}
             <span style="float: right;">
-                <button type="button" onclick="enterEditMode()" style="background: #f39c12; padding: 5px 15px; font-size: 12px;">Edit</button>
+                <button type="button" onclick="window.print()" style="background: #7f8c8d; padding: 5px 15px; font-size: 12px;">Print</button>
+                <button type="button" onclick="enterEditMode()" style="background: #f39c12; padding: 5px 15px; font-size: 12px; margin-left: 5px;">Edit</button>
                 <a href="{% url 'band:service_delete' service.plan_id %}" class="btn" style="background: #e74c3c; padding: 5px 15px; font-size: 12px; margin-left: 5px;">Delete</a>
             </span>
             {% endif %}
@@ -90,6 +91,7 @@
                 <th>Key Used</th>
                 <th>Lead</th>
                 {% if service_songs.0.length %}<th>Length</th>{% endif %}
+                {% if is_admin %}<th style="width: 80px;"></th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -120,6 +122,14 @@
                 {% if service_songs.0.length %}
                 <td>{{ ss.length|default:"-" }} min</td>
                 {% endif %}
+                {% if is_admin %}
+                <td>
+                    <form method="post" action="{% url 'band:service_song_remove' service.plan_id ss.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="padding: 3px 10px; font-size: 12px; background: #e74c3c;">Remove</button>
+                    </form>
+                </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
@@ -130,7 +140,52 @@
         {% if total_length %}&nbsp;&nbsp;|&nbsp;&nbsp;<strong>Total Length:</strong> {{ total_length }}{% endif %}
     </div>
     {% else %}
-    <p style="color: #7f8c8d;"><em>No songs assigned to this service.</em></p>
+    <p style="color: #7f8c8d;"><em>No songs assigned to this service yet.</em></p>
+    {% endif %}
+
+    {% if is_admin %}
+    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+        <h4 style="margin-bottom: 10px; font-size: 14px; color: #555;">Add Song</h4>
+        <form method="post" action="{% url 'band:service_song_add' service.plan_id %}" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+            {% csrf_token %}
+            <div>
+                <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #555;">Song</label>
+                <select name="song_id" id="add-song-select" required style="padding: 7px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 220px;">
+                    <option value="">— Select song —</option>
+                    {% for s in all_songs %}
+                    <option value="{{ s.song_id }}" data-key="{{ s.default_key }}">{{ s.title }}{% if s.artist %} — {{ s.artist }}{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #555;">Key</label>
+                <select name="key_used" id="add-song-key" style="padding: 7px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    {% for k, label in key_choices %}
+                    <option value="{{ k }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 13px; margin-bottom: 4px; color: #555;">Lead (optional)</label>
+                <select name="lead_person_id" style="padding: 7px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 160px;">
+                    <option value="">— No lead —</option>
+                    {% for person in all_people %}
+                    <option value="{{ person.person_id }}">{{ person.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" style="background: #27ae60; padding: 7px 16px;">Add</button>
+        </form>
+    </div>
+    <script>
+    document.getElementById('add-song-select').addEventListener('change', function () {
+        var key = this.options[this.selectedIndex].dataset.key || '';
+        var sel = document.getElementById('add-song-key');
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === key) { sel.selectedIndex = i; break; }
+        }
+    });
+    </script>
     {% endif %}
 </div>
 

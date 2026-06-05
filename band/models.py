@@ -98,6 +98,14 @@ class Person(models.Model):
         return f"{self.name} ({self.person_id})"
 
 
+KEY_CHOICES = [
+    ('C', 'C'), ('Db', 'Db'), ('D', 'D'), ('Eb', 'Eb'), ('E', 'E'), ('F', 'F'),
+    ('Gb', 'Gb'), ('G', 'G'), ('Ab', 'Ab'), ('A', 'A'), ('Bb', 'Bb'), ('B', 'B'),
+    ('Cm', 'Cm'), ('Dm', 'Dm'), ('Em', 'Em'), ('Fm', 'Fm'), ('Gm', 'Gm'),
+    ('Am', 'Am'), ('Bbm', 'Bbm'), ('Bm', 'Bm'),
+]
+
+
 class Song(models.Model):
     """Song library with keys, tempo, and usage tracking"""
 

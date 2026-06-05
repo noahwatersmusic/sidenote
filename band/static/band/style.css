@@ -290,6 +290,17 @@ a:hover {
     cursor: pointer;
 }
 
+/* Print */
+@media print {
+    header, nav, .filters, .pagination,
+    #nav-toggle, .logout-link, .church-switcher { display: none !important; }
+    body { background: white; }
+    .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+    a { color: #333; text-decoration: none; }
+    button, .btn { display: none !important; }
+    .container { padding: 0; }
+}
+
 /* Responsive breakpoints */
 @media (max-width: 768px) {
     body { overflow-x: hidden; }

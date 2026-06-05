@@ -41,12 +41,12 @@
     <table>
         <thead>
             <tr>
-                <th>Title</th>
+                <th><a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}sort=title" style="color: white;">Title {% if sort == 'title' or not sort %}↑{% endif %}</a></th>
                 <th>Artist</th>
                 <th>Key</th>
                 <th>Length</th>
-                <th>Last Used</th>
-                <th>Times Used</th>
+                <th><a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}sort=last_used" style="color: white;">Last Used {% if sort == 'last_used' %}↓{% endif %}</a></th>
+                <th><a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}sort=times_used" style="color: white;">Times Used {% if sort == 'times_used' %}↓{% endif %}</a></th>
             </tr>
         </thead>
         <tbody>
