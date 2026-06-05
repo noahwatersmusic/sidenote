@@ -98,23 +98,17 @@
                     </div>
                 </th>
 
-                <th>Plan ID</th>
                 <th>Songs</th>
                 <th>Length</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for service in services %}
-            <tr>
+            <tr class="row-link" onclick="window.location='{% url 'band:service_detail' service.plan_id %}'">
                 <td><strong>{{ service.service_date|date:"M d, Y" }}</strong></td>
-                <td>{{ service.service_name }}</td>
-                <td><span class="badge badge-info">{{ service.plan_id }}</span></td>
+                <td><a href="{% url 'band:service_detail' service.plan_id %}">{{ service.service_name }}</a></td>
                 <td>{{ service.song_count }} song{{ service.song_count|pluralize }}</td>
                 <td>{{ service.total_length|default:"—" }}</td>
-                <td>
-                    <a href="{% url 'band:service_detail' service.plan_id %}" class="btn" style="padding: 4px 10px; font-size: 12px;">View</a>
-                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -124,6 +118,28 @@
     <p style="color: #7f8c8d;"><em>No services found{% if date_active or selected_names %} matching the current filters{% endif %}.</em></p>
     {% endif %}
 </div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
+    {% else %}
+    <span class="disabled">&laquo; Prev</span>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
+    <span class="current">{{ num }}</span>
+    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+    <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+    {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">Next &raquo;</a>
+    {% else %}
+    <span class="disabled">Next &raquo;</span>
+    {% endif %}
+</div>
+{% endif %}
 
 <script>
 const currentSort = "{{ sort }}";

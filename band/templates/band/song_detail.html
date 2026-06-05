@@ -16,22 +16,18 @@
             </span>
             {% endif %}
         </h3>
-        <p><strong>Song ID:</strong> {{ song.song_id }}</p>
         {% if song.artist %}<p><strong>Artist:</strong> {{ song.artist }}</p>{% endif %}
         <p><strong>Default Key:</strong> <span class="badge badge-info">{{ song.default_key }}</span></p>
         {% if song.tempo %}<p><strong>Tempo:</strong> {{ song.get_tempo_display }}{% if song.bpm %} ({{ song.bpm }} BPM){% endif %}</p>{% endif %}
         {% if song.length %}<p><strong>Length:</strong> {{ song.length }}</p>{% endif %}
         {% if song.style %}<p><strong>Style:</strong> {{ song.style }}</p>{% endif %}
-    </div>
-
-    {% if song.computed_last_used or song.computed_times_used or song.comfort_level %}
-    <div class="card">
-        <h3>Usage Statistics</h3>
+        {% if song.computed_last_used or song.computed_times_used or song.comfort_level %}
+        <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
         {% if song.computed_last_used %}<p><strong>Last Used:</strong> {{ song.computed_last_used|date:"M d, Y" }}</p>{% endif %}
         <p><strong>Times Used:</strong> {{ song.computed_times_used }}</p>
         {% if song.comfort_level %}<p><strong>Comfort Level:</strong> {{ song.comfort_level }}</p>{% endif %}
+        {% endif %}
     </div>
-    {% endif %}
 
     {% if song.arrangement_notes %}
     <div class="card">
@@ -120,7 +116,7 @@
             <h3>Save Changes</h3>
             <p>Click "Review Changes" to see a summary of your changes before saving.</p>
             <div style="margin-top: 15px;">
-                <button type="submit" style="background: #27ae60;">Review Changes</button>
+                <button type="submit" style="background: #27ae60;">Save Changes</button>
                 <button type="button" onclick="cancelEdit()" style="background: #95a5a6; margin-left: 10px;">Cancel</button>
             </div>
         </div>

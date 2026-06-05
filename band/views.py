@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count, Max
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
+from django.core.paginator import Paginator
 from django.utils.text import slugify
 from django.utils.safestring import mark_safe
 from django.utils.crypto import get_random_string
@@ -262,8 +263,11 @@ def people_list(request):
     if search:
         people = people.filter(Q(name__icontains=search) | Q(person_id__icontains=search))
 
+    paginator = Paginator(people, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
     context = {
-        'people': people,
+        'people': page_obj,
+        'page_obj': page_obj,
         'role_choices': Person.ROLE_CHOICES,
         'frequency_choices': Person.FREQUENCY_CHOICES,
     }
@@ -451,8 +455,11 @@ def songs_list(request):
     all_keys = Song.objects.filter(church=church).values_list('default_key', flat=True).distinct().order_by('default_key')
     all_artists = Song.objects.filter(church=church).values_list('artist', flat=True).distinct().order_by('artist')
 
+    paginator = Paginator(songs, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
     context = {
-        'songs': songs,
+        'songs': page_obj,
+        'page_obj': page_obj,
         'tempo_choices': Song.TEMPO_CHOICES,
         'all_keys': all_keys,
         'all_artists': all_artists,
@@ -2009,8 +2016,10 @@ def services_list(request):
 
     # Annotate and compute lengths
     services = services.annotate(song_count=Count('songs'))
-    services = list(services)
-    for service in services:
+    paginator = Paginator(services, 25)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    page_services = list(page_obj)
+    for service in page_services:
         total_sec = sum(
             parse_song_length_to_seconds(ss.song.length, ss.length)
             for ss in service.songs.all()
@@ -2018,7 +2027,8 @@ def services_list(request):
         service.total_length = format_service_length(total_sec)
 
     context = {
-        'services': services,
+        'services': page_services,
+        'page_obj': page_obj,
         'all_service_names': all_service_names,
         'sort': sort,
         'selected_names': selected_names,

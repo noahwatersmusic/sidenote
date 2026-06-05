@@ -6,18 +6,18 @@
 <h2>SideNote Dashboard</h2>
 
 <div class="stats-grid">
-    <div class="stat-card">
+    <a href="{% url 'band:people_list' %}" class="stat-card">
         <div class="stat-number">{{ total_people }}</div>
         <div class="stat-label">Band Members</div>
-    </div>
-    <div class="stat-card">
+    </a>
+    <a href="{% url 'band:songs_list' %}" class="stat-card">
         <div class="stat-number">{{ total_songs }}</div>
         <div class="stat-label">Songs in Library</div>
-    </div>
-    <div class="stat-card">
+    </a>
+    <a href="{% url 'band:people_list' %}?vocal=lead" class="stat-card">
         <div class="stat-number">{{ vocalists }}</div>
         <div class="stat-label">Vocalists</div>
-    </div>
+    </a>
 </div>
 {% if recent_services %}
 <div class="card">

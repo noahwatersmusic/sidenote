@@ -62,26 +62,46 @@
                 <th>Lead Vocal</th>
                 <th>Harmony</th>
                 <th>Frequency</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for person in people %}
-            <tr>
+            <tr class="row-link" onclick="window.location='{% url 'band:person_detail' person.person_id %}'">
                 <td><strong>{{ person.name }}</strong></td>
                 <td>{{ person.get_role_display }}</td>
                 <td>{{ person.primary_instrument }}</td>
                 <td>{% if person.lead_vocal %}<span class="badge badge-success">Yes</span>{% endif %}</td>
                 <td>{% if person.harmony_vocal %}<span class="badge badge-info">Yes</span>{% endif %}</td>
                 <td>{{ person.get_frequency_display }}</td>
-                <td><a href="{% url 'band:person_detail' person.person_id %}">View Details</a></td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7">No band members found.</td>
+                <td colspan="6">No band members found.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
+    {% else %}
+    <span class="disabled">&laquo; Prev</span>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
+    <span class="current">{{ num }}</span>
+    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+    <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a>
+    {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">Next &raquo;</a>
+    {% else %}
+    <span class="disabled">Next &raquo;</span>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
