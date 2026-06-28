@@ -606,9 +606,6 @@ def pco_import(request):
             date_from = request.POST.get('date_from', '').strip()
             date_to = request.POST.get('date_to', '').strip()
             service_types = client.get_service_types()
-            # Date range overrides the Show filter
-            if date_from or date_to:
-                filter_type = 'date_range'
             plans = client.get_plans(
                 service_type_id,
                 filter=filter_type,
@@ -746,15 +743,24 @@ def pco_import(request):
                     length=length_min,
                 )
 
-            # Build admin-designated roles for new people from preview form
+            # Read per-member form data: person role, service role, and include/exclude
             admin_roles = {}
+            service_roles = {}
+            all_form_names = []
             i = 0
             while f"member_name_{i}" in request.POST:
-                name_key = request.POST[f"member_name_{i}"].lower()
+                name = request.POST[f"member_name_{i}"]
+                all_form_names.append(name)
                 role_val = request.POST.get(f"member_person_role_{i}", '')
                 if role_val:
-                    admin_roles[name_key] = role_val
+                    admin_roles[name.lower()] = role_val
+                service_role_val = request.POST.get(f"member_service_role_{i}", '').strip()
+                if service_role_val:
+                    service_roles[name.lower()] = service_role_val
                 i += 1
+
+            included_names = set(request.POST.getlist('member_include'))
+            excluded_names = {n for n in all_form_names if n not in included_names}
 
             # Create people and service-member links
             last_person = Person.objects.filter(church=church).order_by('-person_id').first()
@@ -767,6 +773,8 @@ def pco_import(request):
                 next_pn = 1
 
             for m in members_raw:
+                if m['name'] in excluded_names:
+                    continue
                 person = Person.objects.filter(name__iexact=m['name'], church=church).first()
                 if not person:
                     person_role = admin_roles.get(m['name'].lower(), 'instrumentalist')
@@ -777,10 +785,11 @@ def pco_import(request):
                         church=church,
                     )
                     next_pn += 1
+                service_role = service_roles.get(m['name'].lower(), m['role'])
                 ServiceMember.objects.get_or_create(
                     service=service,
                     person=person,
-                    defaults={'role': m['role']},
+                    defaults={'role': service_role},
                 )
 
             messages.success(request, f'Imported "{service_name}" from Planning Center.')
