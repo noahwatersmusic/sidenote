@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+buildCommand = "python manage.py collectstatic --no-input && python manage.py migrate --no-input"
+
+[deploy]
+startCommand = "gunicorn worshipplanner.wsgi --workers 2 --bind 0.0.0.0:$PORT"
+restartPolicyType = "on_failure"
