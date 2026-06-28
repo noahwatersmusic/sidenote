@@ -24,9 +24,27 @@ class PCOClient:
         return data["data"]
 
     def get_plans(self, service_type_id, filter="future", date_from=None, date_to=None):
-        params = {"per_page": 100, "order": "sort_date"}
-        if filter in ("future", "past", "noPlan"):
-            params["filter"] = filter
+        from datetime import date
+        today = date.today().isoformat()
+
+        params = {"per_page": 100}
+
+        if date_from or date_to:
+            # Determine sort direction so the 100-plan page covers the requested range.
+            # Past date ranges: sort descending so the most recent past plans come first.
+            # Future date ranges: sort ascending so the soonest upcoming plans come first.
+            ceiling = date_to or date_from
+            if ceiling <= today:
+                params["filter"] = "past"
+                params["order"] = "-sort_date"
+            else:
+                params["filter"] = "future"
+                params["order"] = "sort_date"
+        else:
+            if filter in ("future", "past", "noPlan"):
+                params["filter"] = filter
+            params["order"] = "sort_date"
+
         data = self._get(
             f"/services/v2/service_types/{service_type_id}/plans",
             params=params,
