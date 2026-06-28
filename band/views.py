@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count, Max, F
@@ -793,6 +794,9 @@ def pco_import(request):
                 )
 
             messages.success(request, f'Imported "{service_name}" from Planning Center.')
+            if 'add_another' in request.POST:
+                url = reverse('band:pco_import') + f'?service_type_id={service_type_id}'
+                return redirect(url)
             return redirect('band:service_detail', plan_id=new_plan_id)
 
     except Exception as e:
@@ -805,6 +809,27 @@ def pco_import(request):
     except Exception as e:
         messages.error(request, f'Could not reach Planning Center: {e}')
         service_types = []
+
+    # "Add another" returns here with service_type_id — skip straight to plans
+    service_type_id = request.GET.get('service_type_id', '')
+    if service_type_id and service_types:
+        try:
+            plans = client.get_plans(service_type_id, filter='future')
+            service_type_name = next(
+                (st['attributes']['name'] for st in service_types if st['id'] == service_type_id), ''
+            )
+            return render(request, 'band/pco_import.html', {
+                'phase': 'plans',
+                'service_types': service_types,
+                'plans': plans,
+                'selected_service_type_id': service_type_id,
+                'selected_service_type_name': service_type_name,
+                'filter': 'future',
+                'date_from': '',
+                'date_to': '',
+            })
+        except Exception as e:
+            messages.error(request, f'Could not load plans: {e}')
 
     return render(request, 'band/pco_import.html', {
         'phase': 'select',

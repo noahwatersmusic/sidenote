@@ -243,6 +243,12 @@
         Edit <strong>Service Role</strong> to adjust what position is recorded for each member.
         Uncheck <strong>Include</strong> to exclude a member from this import.
     </p>
+    <div style="margin-bottom: 16px;">
+        <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #374151;">
+            <input type="checkbox" name="add_another" value="1" style="width: 15px; height: 15px; cursor: pointer;">
+            Import another service after this one
+        </label>
+    </div>
     <button type="submit" style="background: #27ae60;">Import Service</button>
     <a href="{% url 'band:pco_import' %}" style="margin-left: 15px; font-size: 13px; color: #7f8c8d;">Cancel</a>
 </div>
